@@ -33,14 +33,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Get tags
+        id: timestamp
+        run: |
+          echo "timestamp=$(date +%s)" >>$GITHUB_OUTPUT
+          echo "git_short_sha=$(git rev-parse --short ${{ github.sha }})" >>$GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: bhautikchudasama/awesome-templates
           tags: |
-            type=sha,prefix=,suffix=,format=long
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ steps.timestamp.outputs.git_short_sha }}-${{ steps.timestamp.outputs.timestamp }}
 
       - name: Build and push
         if: ${{ contains('main pre-mainnet-v01 pre-mainnet-01-bin-changes', github.ref_name) }}
